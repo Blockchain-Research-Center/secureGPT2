@@ -1,4 +1,6 @@
 #include <chrono>
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <math.h>
 #include <random>
@@ -92,12 +94,12 @@ int main()
 void MM_test()
 {
     EncryptionParameters parms(scheme_type::ckks);
-    long logN = 13;
+    long logN = 12;
     size_t poly_modulus_degree = 1 << logN;
-    double scale = pow(2.0, 40);
+    double scale = pow(2.0, 30);
     parms.set_poly_modulus_degree(poly_modulus_degree);
-    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 60 }));
-    SEALContext context(parms, true, sec_level_type::none);
+    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 36, 36, 37 }));
+    SEALContext context(parms, true, sec_level_type::tc128);
 
     KeyGenerator keygen(context);
     SecretKey secret_key = keygen.secret_key();
@@ -123,13 +125,21 @@ void MM_test()
     MMEvaluator mme(ckks_evaluator);
 
     vector<vector<double>> X(768);
-    vector<vector<double>> Y(72, vector<double>(poly_modulus_degree, 0.0));
+    vector<vector<double>> Y(768 * 768 / poly_modulus_degree, vector<double>(poly_modulus_degree, 0.0));
+
+    srand((unsigned)time(NULL));
     for (auto i = 0; i < 768; i++) {
         vector<double> val(poly_modulus_degree / 2);
         for (auto j = 0; j < poly_modulus_degree / 2; j++) {
             val[j] = 10.0 * 2.0 * (1.0 * rand() / RAND_MAX - 0.5);
         }
         X[i] = val;
+    }
+
+    for (auto &v : Y) {
+        for (auto &val : v) {
+            val = 10.0 * 2.0 * (1.0 * rand() / RAND_MAX - 0.5);
+        }
     }
     vector<Ciphertext> res;
 
@@ -145,5 +155,12 @@ void MM_test()
     ckks_evaluator.encoder->decode(res_pt, mm_res);
     for (auto i = 0; i < 10; i++) {
         printf("%+.10lf\n", mm_res[i]);
+    }
+    for (auto i = 0; i < 10; i++) {
+        auto res = 0.0;
+        for (auto j = 0; j < 768; j++) {
+            res += X[j][i] * Y[0][j];
+        }
+        printf("%+.10lf\n", res - mm_res[i]);
     }
 }
