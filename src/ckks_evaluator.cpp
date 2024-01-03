@@ -1,4 +1,5 @@
 #include "ckks_evaluator.h"
+#include <seal/plaintext.h>
 #include <seal/util/defines.h>
 using namespace std::chrono;
 
@@ -16,10 +17,21 @@ void CKKSEvaluator::re_encrypt(Ciphertext &ct)
     // ct.save(data.data(),data.size(),compr_mode_type::zstd) << " bytes" << endl;
     Plaintext temp;
     vector<double> v;
-    decryptor->decrypt(ct, temp);
-    encoder->decode(temp, v);
-    encoder->encode(v, scale, temp);
-    encryptor->encrypt(temp, ct);
+
+    Plaintext rand;
+    encoder->encode(init_vec_with_value(N / 2, 0), ct.parms_id(), ct.scale(), rand);
+    evaluator->sub_plain_inplace(ct, rand);
+
+    io->sendCiphertext(ct);
+
+    io->recvCiphertext(*context, ct);
+
+    encoder->encode(init_vec_with_value(N / 2, 0), ct.parms_id(), ct.scale(), rand);
+    evaluator->add_plain_inplace(ct, rand);
+    // decryptor->decrypt(ct, temp);
+    // encoder->decode(temp, v);
+    // encoder->encode(v, scale, temp);
+    // encryptor->encrypt(temp, ct);
     auto end = high_resolution_clock::now();
     cout << duration_cast<milliseconds>(end - start).count() / 2 << " milliseconds" << endl;
     // cout << "depth = " <<

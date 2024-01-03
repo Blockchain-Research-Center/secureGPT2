@@ -5,10 +5,12 @@
 #include <iostream>
 #include <math.h>
 #include <random>
+#include <seal/dynarray.h>
 #include <seal/seal.h>
 #include <string>
 #include <sys/types.h>
 #include <vector>
+#include "channel.h"
 
 using namespace std;
 using namespace seal;
@@ -38,6 +40,7 @@ public:
     Evaluator *evaluator = nullptr;
     RelinKeys *relin_keys = nullptr;
     GaloisKeys *galois_keys = nullptr;
+    Channel *io = nullptr;
     double scale;
     size_t N;
     size_t degree;
@@ -80,6 +83,80 @@ public:
             rots.push_back((degree + exponentiate_uint(2, i)) / exponentiate_uint(2, i));
         }
     }
+
+    // server evaluator
+    CKKSEvaluator(
+        SEALContext *context,
+        Encryptor *encryptor,
+        CKKSEncoder *encoder,
+        Evaluator *evaluator,
+        double scale,
+        RelinKeys *relin_keys,
+        GaloisKeys *galois_keys,
+        Channel *channel)
+    {
+        this->scale = scale;
+        this->encryptor = encryptor;
+        this->encoder = encoder;
+        this->evaluator = evaluator;
+        this->relin_keys = relin_keys;
+        this->galois_keys = galois_keys;
+        this->context = context;
+        this->io = channel;
+
+        N = encoder->slot_count() * 2;
+        degree = N;
+        this->encoder->encode(x_l, scale, a);
+        this->encoder->encode(x_r, scale, b);
+        this->encoder->encode(1 / (x_r - x_l), scale, div_b);
+        this->encoder->encode(-pivot, scale, neg_p);
+        this->encoder->encode(0.5, scale, half);
+        this->encoder->encode(m1, scale, M1);
+        this->encoder->encode(m2, scale, M2);
+        this->encoder->encode(c1, scale, C1);
+        this->encoder->encode(c2, scale, C2);
+
+        for (int i = 0; i < uint(std::ceil(log2(degree))); i++) {
+            rots.push_back((degree + exponentiate_uint(2, i)) / exponentiate_uint(2, i));
+        }
+    }
+
+    CKKSEvaluator(
+        SEALContext *context,
+        Encryptor *encryptor,
+        Decryptor *decryptor,
+        CKKSEncoder *encoder,
+        Evaluator *evaluator,
+        double scale,
+        RelinKeys *relin_keys,
+        GaloisKeys *galois_keys)
+    {
+        this->scale = scale;
+        this->encryptor = encryptor;
+        this->decryptor = decryptor;
+        this->encoder = encoder;
+        this->evaluator = evaluator;
+        this->relin_keys = relin_keys;
+        this->galois_keys = galois_keys;
+        this->context = context;
+
+        N = encoder->slot_count() * 2;
+        degree = N;
+        this->encoder->encode(x_l, scale, a);
+        this->encoder->encode(x_r, scale, b);
+        this->encoder->encode(1 / (x_r - x_l), scale, div_b);
+        this->encoder->encode(-pivot, scale, neg_p);
+        this->encoder->encode(0.5, scale, half);
+        this->encoder->encode(m1, scale, M1);
+        this->encoder->encode(m2, scale, M2);
+        this->encoder->encode(c1, scale, C1);
+        this->encoder->encode(c2, scale, C2);
+
+        for (int i = 0; i < uint(std::ceil(log2(degree))); i++) {
+            rots.push_back((degree + exponentiate_uint(2, i)) / exponentiate_uint(2, i));
+        }
+    }
+
     void re_encrypt(Ciphertext &ct);
     void print_decrypted_ct(Ciphertext &ct, int nums);
     vector<double> init_vec_with_value(int N, double init_value);
