@@ -9,9 +9,7 @@ void CKKSEvaluator::re_encrypt(Ciphertext &ct)
     while (ct.coeff_modulus_size() > 1) {
         evaluator->mod_switch_to_next_inplace(ct);
     }
-    vector<seal_byte> data;
-    data.resize(ct.save_size(compr_mode_type::zstd));
-    comm += ct.save(data.data(), data.size(), compr_mode_type::zstd);
+
     round++;
     // cout << "Communication cost:  " <<
     // ct.save(data.data(),data.size(),compr_mode_type::zstd) << " bytes" << endl;
@@ -22,9 +20,11 @@ void CKKSEvaluator::re_encrypt(Ciphertext &ct)
     encoder->encode(init_vec_with_value(N / 2, 0), ct.parms_id(), ct.scale(), rand);
     evaluator->sub_plain_inplace(ct, rand);
 
-    io->sendCiphertext(ct);
+    comm_send += io->sendCiphertext(ct);
 
-    io->recvCiphertext(*context, ct);
+    cout << comm_send << endl;
+
+    comm_recv += io->recvCiphertext(*context, ct);
 
     encoder->encode(init_vec_with_value(N / 2, 0), ct.parms_id(), ct.scale(), rand);
     evaluator->add_plain_inplace(ct, rand);
@@ -401,9 +401,9 @@ Ciphertext CKKSEvaluator::exp(Ciphertext x)
     Plaintext p0, p1, delta;
     vector<double> dest;
 
-    encoder->encode(init_vec_with_value(N, -8.0), x.parms_id(), x.scale(), p0);
-    encoder->encode(init_vec_with_value(N, 1.5), x.parms_id(), x.scale(), p1);
-    encoder->encode(init_vec_with_value(N, 1.0 / 32), x.parms_id(), x.scale(), delta);
+    encoder->encode(init_vec_with_value(N / 2, -8.0), x.parms_id(), x.scale(), p0);
+    encoder->encode(init_vec_with_value(N / 2, 1.5), x.parms_id(), x.scale(), p1);
+    encoder->encode(init_vec_with_value(N / 2, 1.0 / 32), x.parms_id(), x.scale(), delta);
 
     evaluator->sub_plain(x, p0, b0);
     evaluator->multiply_plain_inplace(b0, delta);
@@ -416,7 +416,7 @@ Ciphertext CKKSEvaluator::exp(Ciphertext x)
     b1 = sgn_eval(b1, 7, 3, 0.5);
 
     Plaintext zero_point_five;
-    encoder->encode(init_vec_with_value(N, 0.5), b1.parms_id(), b1.scale(), zero_point_five);
+    encoder->encode(init_vec_with_value(N / 2, 0.5), b1.parms_id(), b1.scale(), zero_point_five);
     Ciphertext a1, a2;
 
     evaluator->sub(b0, b1, a1);                    // a1 = b0 - b1

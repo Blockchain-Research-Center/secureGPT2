@@ -2,9 +2,11 @@
 #include <cstdio>
 #include <iostream>
 #include <seal/decryptor.h>
+#include <seal/galoiskeys.h>
 #include <seal/util/defines.h>
 #include <seal/valcheck.h>
 #include <string>
+#include <sys/types.h>
 #include <vector>
 #include <zmq.hpp>
 #include "channel.h"
@@ -39,26 +41,40 @@ public:
         CKKSEncoder *encoder = new CKKSEncoder(context);
         RelinKeys *relin_keys = new RelinKeys();
         keygen.create_relin_keys(*relin_keys);
-        GaloisKeys galois_keys;
 
-        std::vector<std::uint32_t> rots;
-        for (int i = 0; i < 12; i++) {
-            rots.push_back(
-                (context.key_context_data()->parms().poly_modulus_degree() + exponentiate_uint(2, i)) /
-                exponentiate_uint(2, i));
+        GaloisKeys *galois_keys = new GaloisKeys();
+
+        {
+            vector<int> step;
+            for (auto i = 0; i < 12; i++) {
+                step.push_back(1 << i);
+            }
+            step.push_back(-8);
+
+            keygen.create_galois_keys(step, *galois_keys);
         }
-        keygen.create_galois_keys(rots, galois_keys);
+        // {
+        //     std::vector<std::uint32_t> rots;
+        //     for (int i = 0; i < 12; i++) {
+        //         rots.push_back(
+        //             (context.key_context_data()->parms().poly_modulus_degree() + exponentiate_uint(2, i)) /
+        //             exponentiate_uint(2, i));
+        //     }
+        //     keygen.create_galois_keys(rots, *galois_keys);
+        // }
 
         MySealKeys key(context);
 
-        key.setKeys(public_key, *relin_keys);
+        key.setKeys(public_key, *relin_keys, *galois_keys);
 
         auto key_string = key.serialize();
+        cout << "keygen: " << key_string.size() / 1024.0 / 1024.0 << endl;
         auto zmq_message = zmq::message_t(key_string.begin(), key_string.end());
+
         io->socket.send(zmq_message, zmq::send_flags::none);
 
         CKKSEvaluator *ckks_evaluator =
-            new CKKSEvaluator(&context, encryptor, decryptor, encoder, evaluator, scale, relin_keys, &galois_keys);
+            new CKKSEvaluator(&context, encryptor, decryptor, encoder, evaluator, scale, relin_keys, galois_keys);
 
         this->ckks = ckks_evaluator;
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <chrono>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <math.h>
@@ -44,7 +45,8 @@ public:
     double scale;
     size_t N;
     size_t degree;
-    size_t comm = 0;
+    size_t comm_send = 0;
+    size_t comm_recv = 0;
     size_t round = 0;
     std::vector<std::uint32_t> rots;
 

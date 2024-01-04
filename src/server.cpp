@@ -16,6 +16,12 @@ int main()
 
     Server server(parms, c);
     server.recvParams();
-    server.func();
+    server.run(Server::func::GELU);
+
+    std::cout << (server.ckks->comm_recv) / 1024.0 / 1024.0 << " MB" << std::endl;
+    std::cout << (server.ckks->comm_send) / 1024.0 / 1024.0 << " MB" << std::endl;
+
+    free(c);
+
     return 0;
 }

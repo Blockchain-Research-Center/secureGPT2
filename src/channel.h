@@ -1,6 +1,8 @@
 #pragma once
+#include <cstddef>
 #include <iostream>
 #include <seal/context.h>
+#include <sys/types.h>
 #include "seal/seal.h"
 #include "zmq.hpp"
 
@@ -22,24 +24,33 @@ public:
             break;
         }
     }
+    ~Channel()
+    {
+        socket.close();
+        zmqcontext.close();
+    }
 
-    void sendCiphertext(Ciphertext &encrypted)
+    size_t sendCiphertext(Ciphertext &encrypted)
     {
         vector<seal::seal_byte> ct(encrypted.save_size());
         auto ct_size = encrypted.save(ct.data(), ct.size());
         const byte *ct_ptr = reinterpret_cast<const byte *>(ct.data());
         zmq::message_t message(ct_ptr, ct_size);
+        auto m_size = message.size();
         socket.send(message, zmq::send_flags::none);
+
         std::cout << "Sent: "
                   << "Cipher" << std::endl;
+        return m_size;
     }
 
-    void recvCiphertext(seal::SEALContext sealcontext, Ciphertext &encrypted)
+    size_t recvCiphertext(seal::SEALContext sealcontext, Ciphertext &encrypted)
     {
         zmq::message_t request;
         auto _ = socket.recv(request);
         byte *ptr = request.data<byte>();
         encrypted.unsafe_load(sealcontext, ptr, request.size());
+        return request.size();
     }
 
     zmq::context_t zmqcontext;

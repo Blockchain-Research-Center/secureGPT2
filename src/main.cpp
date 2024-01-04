@@ -9,8 +9,8 @@
 #include <seal/seal.h>
 #include <string>
 #include <vector>
-// #include "gelu.h"
-// #include "layer_norm.h"
+#include "gelu.h"
+#include "layer_norm.h"
 #include "matrix_mul.h"
 #include "softmax.h"
 
@@ -44,38 +44,47 @@ int main()
     keygen.create_relin_keys(relin_keys);
     GaloisKeys galois_keys;
 
-    std::vector<std::uint32_t> rots;
-    for (int i = 0; i < 12; i++) {
-        rots.push_back((poly_modulus_degree + exponentiate_uint(2, i)) / exponentiate_uint(2, i));
-    }
-    keygen.create_galois_keys(rots, galois_keys);
+    // std::vector<std::uint32_t> rots;
+    // for (int i = 0; i < 12; i++) {
+    //     rots.push_back((poly_modulus_degree + exponentiate_uint(2, i)) / exponentiate_uint(2, i));
+    // }
+
+    keygen.create_galois_keys(galois_keys);
 
     CKKSEvaluator ckks_evaluator(context, encryptor, decryptor, encoder, evaluator, scale, relin_keys, galois_keys);
     // GeLUEvaluator gelu_evaluator(ckks_evaluator);
-    // LNEvaluator ln_evaluator(ckks_evaluator);
+    LNEvaluator ln_evaluator(ckks_evaluator);
     // SoftmaxEvaluator softmax_evaluator(ckks_evaluator);
     // double bound = 1.0 / (1 << 16);
-    // vector<double> input = { -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4 };
-    // Plaintext plain_input;
-    // Ciphertext cipher_input;
-    // Ciphertext cipher_output;
-    // vector<double> output;
-    // ckks_evaluator.encoder->encode(input, scale, plain_input);
-    // ckks_evaluator.encryptor->encrypt(plain_input, cipher_input);
+    vector<double> input = { -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4 };
+    Plaintext plain_input;
+    Ciphertext cipher_input;
+    Ciphertext cipher_output;
+    vector<double> output;
+    ckks_evaluator.encoder->encode(input, scale, plain_input);
+    ckks_evaluator.encryptor->encrypt(plain_input, cipher_input);
 
     // auto start = high_resolution_clock::now();
     // gelu_evaluator.gelu(cipher_input, cipher_output);
     // auto end = high_resolution_clock::now();
-    // cout << poly_modulus_degree/2 << " times gelu() takes: " << duration_cast<milliseconds>(end - start).count()
-    // / 1.0 << " milliseconds" << endl; auto start = high_resolution_clock::now(); int size = input.size();
-    // ln_evaluator.layer_norm(cipher_input, cipher_output, size);
+    // cout << poly_modulus_degree / 2 << " times gelu() takes: " << duration_cast<milliseconds>(end - start).count()
+    // / 1.0
+    //      << " milliseconds" << endl;
+    auto start = high_resolution_clock::now();
+    int size = input.size();
+    ln_evaluator.layer_norm(cipher_input, cipher_output, size);
     // //ckks_evaluator.sgn_eval(cipher_input, 7, 3, 0.5);
+    auto end = high_resolution_clock::now();
+    cout << poly_modulus_degree / 4 << " times LN() takes: " << duration_cast<milliseconds>(end - start).count() / 1.0
+         << " milliseconds" << endl;
+    // ckks_evaluator.print_decrypted_ct(cipher_output, 8);
+    // auto start = high_resolution_clock::now();
+    // int size = 8;
+    // softmax_evaluator.softmax(cipher_input, cipher_output, size);
     // auto end = high_resolution_clock::now();
-    // cout << poly_modulus_degree/4 << " times LN() takes: " << duration_cast<milliseconds>(end - start).count() / 1.0
-    // << " milliseconds" << endl; ckks_evaluator.print_decrypted_ct(cipher_output, 8); auto start =
-    // high_resolution_clock::now(); int size = 8; softmax_evaluator.softmax(cipher_input, cipher_output, size); auto
-    // end = high_resolution_clock::now(); cout << poly_modulus_degree/4 << " times softmax() takes: " <<
-    // duration_cast<milliseconds>(end - start).count() / 1.0 << " milliseconds" << endl;
+    // cout << poly_modulus_degree / 4
+    //      << " times softmax() takes: " << duration_cast<milliseconds>(end - start).count() / 1.0 << " milliseconds"
+    //      << endl;
     // ckks_evaluator.print_decrypted_ct(cipher_output, 8);
     // auto start = high_resolution_clock::now();
     // int size = input.size();
@@ -88,7 +97,7 @@ int main()
     // ckks_evaluator.print_decrypted_ct(cipher_output, 8);
     // cout << "communication cost: " << ckks_evaluator.comm << " bytes" << endl;
     // cout << "communication round: " << ckks_evaluator.round << endl;
-    MM_test();
+    // MM_test();
 }
 
 void MM_test()

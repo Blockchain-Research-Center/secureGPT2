@@ -9,10 +9,11 @@ public:
     MySealKeys(const seal::SEALContext &context) : context(context)
     {}
 
-    void setKeys(const seal::PublicKey &publicKey, const seal::RelinKeys &relinKeys)
+    void setKeys(const seal::PublicKey &publicKey, const seal::RelinKeys &relinKeys, const seal::GaloisKeys &rotKeys)
     {
         this->publicKey = publicKey;
         this->relinKeys = relinKeys;
+        this->rotKeys = rotKeys;
     }
 
     std::string serialize() const
@@ -20,6 +21,7 @@ public:
         std::stringstream ss;
         publicKey.save(ss);
         relinKeys.save(ss);
+        rotKeys.save(ss);
         return ss.str();
     }
 
@@ -28,20 +30,11 @@ public:
         std::stringstream ss(data);
         publicKey.load(context, ss);
         relinKeys.load(context, ss);
+        rotKeys.load(context, ss);
     }
 
-    seal::PublicKey pk()
-    {
-        return publicKey;
-    }
-
-    seal::RelinKeys rk()
-    {
-        return relinKeys;
-    }
-
-private:
     seal::PublicKey publicKey;
     seal::RelinKeys relinKeys;
+    seal::GaloisKeys rotKeys;
     seal::SEALContext context;
 };
