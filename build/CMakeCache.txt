@@ -235,6 +235,9 @@ PrivateGPT_SOURCE_DIR:STATIC=/home/irin/code/secure-inference/PrivateGPT
 //The directory containing a CMake configuration file for SEAL.
 SEAL_DIR:PATH=/usr/local/lib/cmake/SEAL-4.1
 
+//The directory containing a CMake configuration file for cppzmq.
+cppzmq_DIR:PATH=cppzmq_DIR-NOTFOUND
+
 
 ########################
 # INTERNAL cache entries

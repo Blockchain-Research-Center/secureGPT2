@@ -55,6 +55,30 @@ void MMEvaluator::multiply_power_of_X(Ciphertext &encrypted, Ciphertext &destina
 
     Plaintext p(s);
     ckks->evaluator->multiply_plain(destination, p, destination);
+
+    // auto context = *ckks->context;
+    // auto context_data = context.get_context_data(context.first_parms_id());
+    // auto param = context_data->parms();
+
+    // ckks->evaluator->transform_from_ntt_inplace(encrypted);
+    // auto coeff_mod_count = param.coeff_modulus().size() - 1;
+    // auto coeff_count = ckks->degree;
+    // auto encrypted_count = encrypted.size();
+
+    // destination = encrypted;
+
+    // for (int i = 0; i < encrypted_count; i++) {
+    //     for (int j = 0; j < coeff_mod_count; j++) {
+    //         negacyclic_shift_poly_coeffmod(
+    //             encrypted.data(i) + (j * coeff_count),
+    //             coeff_count,
+    //             index,
+    //             ckks->encryption_parameters->coeff_modulus()[j],
+    //             destination.data(i) + (j * coeff_count));
+    //     }
+    // }
+    // ckks->evaluator->transform_to_ntt_inplace(encrypted);
+    // ckks->evaluator->transform_to_ntt_inplace(destination);
 }
 
 void MMEvaluator::matrix_mul(vector<vector<double>> &x, vector<vector<double>> &y, vector<Ciphertext> &res)
@@ -113,11 +137,11 @@ void MMEvaluator::matrix_mul(vector<vector<double>> &x, vector<vector<double>> &
         Ciphertext res_col_ct = zero;
         vector<Ciphertext> temp_cts(768);
         for (int j = 0; j < 768; j++) {
-            ckks->evaluator->multiply_plain(b_expanded_cts[i * 768 + j], a_pts[j], temp_cts[j]);
+            ckks->evaluator->multiply_plain(b_expanded_cts[768 * i + j], a_pts[j], temp);
+            res_col_ct.scale() = temp.scale();
+            ckks->evaluator->add(res_col_ct, temp, res_col_ct);
         }
-        res_col_ct.scale() = temp_cts[0].scale();
-        ckks->evaluator->add_many(temp_cts, res_col_ct);
-        res_col_ct.scale() *= 4096;
+        res_col_ct.scale() *= 1.0;
         res.push_back(res_col_ct);
     }
 
@@ -131,7 +155,7 @@ void MMEvaluator::matrix_mul(vector<vector<double>> &x, vector<vector<double>> &
     for (auto &ct : res) {
         rece_size += ct.save(rece_bytes.data(), rece_bytes.size());
     }
-    cout << rece_size / 1024.0 / 1024.0 << " MB" << endl;
+    cout << rece_size * 1.0 / 1024.0 / 1024.0 << " MB" << endl;
 
     time_end = high_resolution_clock::now();
     cout << "calculating res time: " << duration_cast<seconds>(time_end - time_start).count() << " seconds" << endl;
@@ -139,6 +163,7 @@ void MMEvaluator::matrix_mul(vector<vector<double>> &x, vector<vector<double>> &
 
 void MMEvaluator::expandEncode(vector<double> &val, Ciphertext &ct)
 {
+    double scale = pow(2.0, 35.0);
     Plaintext zero_pt;
     ckks->encoder->encode(std::vector<double>(ckks->N / 2, 0.0), ckks->scale, zero_pt);
     Ciphertext zero;
@@ -153,11 +178,11 @@ void MMEvaluator::expandEncode(vector<double> &val, Ciphertext &ct)
 
     Plaintext p(poly_modulus_degree * 2);
 
+    // for (auto i = 0; i < poly_modulus_degree; i++) {
+    //     val[i] = 10.0 * 2.0 * (1.0 * rand() / RAND_MAX - 0.5);
+    // }
     for (auto i = 0; i < poly_modulus_degree; i++) {
-        val[i] = 10.0 * 2.0 * (1.0 * rand() / RAND_MAX - 0.5);
-    }
-    for (auto i = 0; i < poly_modulus_degree; i++) {
-        auto coeffd = std::round(val[i] * 10000000000);
+        auto coeffd = std::round(val[i] * scale / 4096.0);
         bool is_negative = std::signbit(coeffd);
         auto coeffu = static_cast<std::uint64_t>(std::fabs(coeffd));
         if (is_negative) {
@@ -175,7 +200,7 @@ void MMEvaluator::expandEncode(vector<double> &val, Ciphertext &ct)
         util::ntt_negacyclic_harvey(p.data(i * poly_modulus_degree), ntt_tables[i]);
     }
     p.parms_id() = context.first_parms_id();
-    p.scale() = 10000000000;
+    p.scale() = scale;
 
     zero.scale() = p.scale();
 

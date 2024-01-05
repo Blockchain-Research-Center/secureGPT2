@@ -1,8 +1,11 @@
 #include <chrono>
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <math.h>
 #include <random>
 #include <seal/ciphertext.h>
+#include <seal/context.h>
 #include <seal/plaintext.h>
 #include <seal/seal.h>
 #include <string>
@@ -21,40 +24,55 @@ void MM_test();
 
 int main()
 {
+
     EncryptionParameters parms(scheme_type::ckks);
     long logN = 14;
     size_t poly_modulus_degree = 1 << logN;
     double scale = pow(2.0, 40);
     parms.set_poly_modulus_degree(poly_modulus_degree);
     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 58, 40, 40, 40, 40, 40, 40, 40, 40, 58 }));
-    SEALContext context(parms);
+    SEALContext *context = new SEALContext(parms);
 
-    KeyGenerator keygen(context);
+    // KeyGenerator keygen(context);
+    // SecretKey secret_key = keygen.secret_key();
+    // PublicKey public_key;
+    // keygen.create_public_key(public_key);
+
+    // Encryptor encryptor(context, public_key);
+    // Evaluator evaluator(context);
+    // Decryptor decryptor(context, secret_key);
+    // CKKSEncoder encoder(context);
+    // RelinKeys relin_keys;
+    // keygen.create_relin_keys(relin_keys);
+    // GaloisKeys galois_keys;
+
+    // // std::vector<std::uint32_t> rots;
+    // // for (int i = 0; i < 12; i++) {
+    // //     rots.push_back((poly_modulus_degree + exponentiate_uint(2, i)) / exponentiate_uint(2, i));
+    // // }
+    // // keygen.create_galois_keys(rots, galois_keys);
+    // keygen.create_galois_keys(galois_keys);
+
+    KeyGenerator keygen(*context);
     SecretKey secret_key = keygen.secret_key();
     PublicKey public_key;
     keygen.create_public_key(public_key);
 
-    Encryptor encryptor(context, public_key);
-    Evaluator evaluator(context);
-    Decryptor decryptor(context, secret_key);
-    CKKSEncoder encoder(context);
-    RelinKeys relin_keys;
-    keygen.create_relin_keys(relin_keys);
-    GaloisKeys galois_keys;
+    Encryptor *encryptor = new Encryptor(*context, public_key);
+    Evaluator *evaluator = new Evaluator(*context);
+    Decryptor *decryptor = new Decryptor(*context, secret_key);
+    CKKSEncoder *encoder = new CKKSEncoder(*context);
+    RelinKeys *relin_keys = new RelinKeys();
+    keygen.create_relin_keys(*relin_keys);
 
-    // std::vector<std::uint32_t> rots;
-    // for (int i = 0; i < 12; i++) {
-    //     rots.push_back((poly_modulus_degree + exponentiate_uint(2, i)) / exponentiate_uint(2, i));
-    // }
-    // keygen.create_galois_keys(rots, galois_keys);
-    keygen.create_galois_keys(galois_keys);
+    GaloisKeys *galois_keys = new GaloisKeys();
 
     CKKSEvaluator ckks_evaluator(context, encryptor, decryptor, encoder, evaluator, scale, relin_keys, galois_keys);
     GeLUEvaluator gelu_evaluator(ckks_evaluator);
     LNEvaluator ln_evaluator(ckks_evaluator);
     SoftmaxEvaluator softmax_evaluator(ckks_evaluator);
     // double bound = 1.0 / (1 << 16);
-    vector<double> input = {-0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4};
+    vector<double> input = { -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4 };
     Plaintext plain_input;
     Ciphertext cipher_input;
     Ciphertext cipher_output;
@@ -65,15 +83,14 @@ int main()
     auto start = high_resolution_clock::now();
     gelu_evaluator.gelu(cipher_input, cipher_output);
     auto end = high_resolution_clock::now();
-    cout << poly_modulus_degree/2 << " times gelu() takes: " << duration_cast<milliseconds>(end - start).count()
-    / 1.0 << " milliseconds" << endl;
+    cout << poly_modulus_degree / 2 << " times gelu() takes: " << duration_cast<milliseconds>(end - start).count() / 1.0
+         << " milliseconds" << endl;
 
     //  auto start = high_resolution_clock::now(); int size = input.size();
     // ln_evaluator.layer_norm(cipher_input, cipher_output, size);
     // auto end = high_resolution_clock::now();
     // cout << poly_modulus_degree/4 << " times LN() takes: " << duration_cast<milliseconds>(end - start).count() / 1.0
-    // << " milliseconds" << endl; 
-
+    // << " milliseconds" << endl;
 
     // auto start = high_resolution_clock::now();
     // int size = input.size();
@@ -84,66 +101,81 @@ int main()
     //      << endl;
 
     ckks_evaluator.print_decrypted_ct(cipher_output, 8);
-    cout << "communication cost: " << ckks_evaluator.comm << " bytes" << endl;
-    cout << "communication round: " << ckks_evaluator.round << endl;
-    //MM_test();
+    // cout << "communication cost: " << ckks_evaluator.comm << " bytes" << endl;
+    // cout << "communication round: " << ckks_evaluator.round << endl;
+    // MM_test();
 }
 
-void MM_test()
-{
-    EncryptionParameters parms(scheme_type::ckks);
-    long logN = 13;
-    size_t poly_modulus_degree = 1 << logN;
-    double scale = pow(2.0, 40);
-    parms.set_poly_modulus_degree(poly_modulus_degree);
-    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 60 }));
-    SEALContext context(parms, true, sec_level_type::none);
+// void MM_test()
+// {
+//     EncryptionParameters parms(scheme_type::ckks);
+//     long logN = 12;
+//     size_t poly_modulus_degree = 1 << logN;
+//     double scale = pow(2.0, 30);
+//     parms.set_poly_modulus_degree(poly_modulus_degree);
+//     parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 36, 36, 37 }));
+//     SEALContext context(parms, true, sec_level_type::tc128);
 
-    KeyGenerator keygen(context);
-    SecretKey secret_key = keygen.secret_key();
-    PublicKey public_key;
-    keygen.create_public_key(public_key);
+//     KeyGenerator keygen(context);
+//     SecretKey secret_key = keygen.secret_key();
+//     PublicKey public_key;
+//     keygen.create_public_key(public_key);
 
-    Encryptor encryptor(context, public_key, secret_key);
-    Evaluator evaluator(context);
-    Decryptor decryptor(context, secret_key);
-    CKKSEncoder encoder(context);
-    RelinKeys relin_keys;
-    keygen.create_relin_keys(relin_keys);
-    GaloisKeys galois_keys;
+//     Encryptor encryptor(context, public_key, secret_key);
+//     Evaluator evaluator(context);
+//     Decryptor decryptor(context, secret_key);
+//     CKKSEncoder encoder(context);
+//     RelinKeys relin_keys;
+//     keygen.create_relin_keys(relin_keys);
+//     GaloisKeys galois_keys;
 
-    std::vector<std::uint32_t> rots;
-    for (int i = 0; i < logN; i++) {
-        rots.push_back((poly_modulus_degree + exponentiate_uint(2, i)) / exponentiate_uint(2, i));
-    }
-    keygen.create_galois_keys(rots, galois_keys);
+//     std::vector<std::uint32_t> rots;
+//     for (int i = 0; i < logN; i++) {
+//         rots.push_back((poly_modulus_degree + exponentiate_uint(2, i)) / exponentiate_uint(2, i));
+//     }
+//     keygen.create_galois_keys(rots, galois_keys);
 
-    CKKSEvaluator ckks_evaluator(context, encryptor, decryptor, encoder, evaluator, scale, relin_keys, galois_keys);
+//     CKKSEvaluator ckks_evaluator(context, encryptor, decryptor, encoder, evaluator, scale, relin_keys, galois_keys);
 
-    MMEvaluator mme(ckks_evaluator);
+//     MMEvaluator mme(ckks_evaluator);
 
-    vector<vector<double>> X(768);
-    vector<vector<double>> Y(72, vector<double>(poly_modulus_degree, 0.0));
-    for (auto i = 0; i < 768; i++) {
-        vector<double> val(poly_modulus_degree / 2);
-        for (auto j = 0; j < poly_modulus_degree / 2; j++) {
-            val[j] = 10.0 * 2.0 * (1.0 * rand() / RAND_MAX - 0.5);
-        }
-        X[i] = val;
-    }
-    vector<Ciphertext> res;
+//     vector<vector<double>> X(768);
+//     vector<vector<double>> Y(768 * 768 / poly_modulus_degree, vector<double>(poly_modulus_degree, 0.0));
 
-    mme.matrix_mul(X, Y, res);
+//     srand((unsigned)time(NULL));
+//     for (auto i = 0; i < 768; i++) {
+//         vector<double> val(poly_modulus_degree / 2);
+//         for (auto j = 0; j < poly_modulus_degree / 2; j++) {
+//             val[j] = 10.0 * 2.0 * (1.0 * rand() / RAND_MAX - 0.5);
+//         }
+//         X[i] = val;
+//     }
 
-    // for (auto i = 0; i < 10; i++) {
-    //     printf("%+.10lf\n", -3.5153774 * X[0][i]);
-    // }
+//     for (auto &v : Y) {
+//         for (auto &val : v) {
+//             val = 10.0 * 2.0 * (1.0 * rand() / RAND_MAX - 0.5);
+//         }
+//     }
+//     vector<Ciphertext> res;
 
-    Plaintext res_pt;
-    vector<double> mm_res;
-    ckks_evaluator.decryptor->decrypt(res[0], res_pt);
-    ckks_evaluator.encoder->decode(res_pt, mm_res);
-    for (auto i = 0; i < 10; i++) {
-        printf("%+.10lf\n", mm_res[i]);
-    }
-}
+//     mme.matrix_mul(X, Y, res);
+
+//     // for (auto i = 0; i < 10; i++) {
+//     //     printf("%+.10lf\n", -3.5153774 * X[0][i]);
+//     // }
+
+//     Plaintext res_pt;
+//     vector<double> mm_res;
+//     ckks_evaluator.decryptor->decrypt(res[0], res_pt);
+//     ckks_evaluator.encoder->decode(res_pt, mm_res);
+//     for (auto i = 0; i < 10; i++) {
+//         printf("%+.10lf\n", mm_res[i]);
+//     }
+//     for (auto i = 0; i < 10; i++) {
+//         auto res = 0.0;
+//         for (auto j = 0; j < 768; j++) {
+//             res += X[j][i] * Y[0][j];
+//         }
+//         printf("%+.10lf\n", res - mm_res[i]);
+//     }
+// }
