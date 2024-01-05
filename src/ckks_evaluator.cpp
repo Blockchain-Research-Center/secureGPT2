@@ -5,7 +5,6 @@ using namespace std::chrono;
 
 void CKKSEvaluator::re_encrypt(Ciphertext &ct)
 {
-    auto start = high_resolution_clock::now();
     while (ct.coeff_modulus_size() > 1) {
         evaluator->mod_switch_to_next_inplace(ct);
     }
@@ -20,15 +19,10 @@ void CKKSEvaluator::re_encrypt(Ciphertext &ct)
 
     comm_send += io->sendCiphertext(ct);
 
-    cout << comm_send << endl;
-
     comm_recv += io->recvCiphertext(*context, ct);
 
     encoder->encode(init_vec_with_value(N / 2, 0), ct.parms_id(), ct.scale(), rand);
     evaluator->add_plain_inplace(ct, rand);
-
-    auto end = high_resolution_clock::now();
-    cout << duration_cast<milliseconds>(end - start).count() / 2 << " milliseconds" << endl;
 }
 
 void CKKSEvaluator::print_decrypted_ct(Ciphertext &ct, int nums)
@@ -182,7 +176,7 @@ Ciphertext CKKSEvaluator::sgn_eval2(Ciphertext x, int d_g, int d_f)
 {
     Ciphertext dest = x;
     for (int i = 0; i < d_g; i++) {
-        //cout << "depth: " << context->get_context_data(dest.parms_id())->chain_index() << endl;
+        // cout << "depth: " << context->get_context_data(dest.parms_id())->chain_index() << endl;
         if (context->get_context_data(dest.parms_id())->chain_index() < 4) {
             re_encrypt(dest);
         }
@@ -193,7 +187,7 @@ Ciphertext CKKSEvaluator::sgn_eval2(Ciphertext x, int d_g, int d_f)
         }
     }
     for (int i = 0; i < d_f; i++) {
-        //cout << "depth: " << context->get_context_data(dest.parms_id())->chain_index() << endl;
+        // cout << "depth: " << context->get_context_data(dest.parms_id())->chain_index() << endl;
 
         if (context->get_context_data(dest.parms_id())->chain_index() < 4) {
             re_encrypt(dest);

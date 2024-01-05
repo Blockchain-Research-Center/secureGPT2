@@ -12,10 +12,7 @@ int main()
 
     Server server(parms, c);
     server.recvParams();
-    server.run(Server::func::SOFTMAX);
-
-    std::cout << (server.ckks->comm_recv) / 1024.0 / 1024.0 << " MB" << std::endl;
-    std::cout << (server.ckks->comm_send) / 1024.0 / 1024.0 << " MB" << std::endl;
+    server.run(Server::func::GELU);
 
     free(c);
 

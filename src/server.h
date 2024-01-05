@@ -78,7 +78,9 @@ public:
             auto end = high_resolution_clock::now();
             cout << ckks->N / 2 << " times gelu() takes: " << duration_cast<milliseconds>(end - start).count() << " ms"
                  << endl;
-        } break;
+
+            std::cout << (ckks->comm_recv + ckks->comm_send) / 1024.0 / 1024.0 << " MB" << std::endl;
+        }
 
         case func::LN: {
             vector<double> input = { -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4 };
@@ -96,12 +98,13 @@ public:
             auto end = high_resolution_clock::now();
             cout << ckks->N / 4 << " times LN() takes: " << duration_cast<milliseconds>(end - start).count() / 1.0
                  << " milliseconds" << endl;
-        } break;
+            std::cout << (ckks->comm_recv + ckks->comm_send) / 1024.0 / 1024.0 << " MB" << std::endl;
+        }
 
-        case func::MM: {
-            vector<Ciphertext> Y;
-            io->recv_vec_Ciphertexts(context, Y);
-        } break;
+        // case func::MM: {
+        //     vector<Ciphertext> Y;
+        //     io->recv_vec_Ciphertexts(context, Y);
+        // } break;
         case func::SOFTMAX: {
             vector<double> input = { -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4 };
             Plaintext plain_input;
@@ -118,7 +121,8 @@ public:
             auto end = high_resolution_clock::now();
             cout << ckks->N / 4 << " times softmax() takes: " << duration_cast<milliseconds>(end - start).count() / 1.0
                  << " milliseconds " << endl;
-        } break;
+            std::cout << (ckks->comm_recv + ckks->comm_send) / 1024.0 / 1024.0 << " MB" << std::endl;
+        }
         }
     }
 

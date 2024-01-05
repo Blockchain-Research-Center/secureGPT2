@@ -39,8 +39,6 @@ public:
         auto m_size = message.size();
         socket.send(message, zmq::send_flags::none);
 
-        std::cout << "Sent: "
-                  << "Cipher" << std::endl;
         return m_size;
     }
 
