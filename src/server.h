@@ -2,12 +2,14 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdio>
+#include <seal/ciphertext.h>
 #include <seal/encryptor.h>
 #include <seal/galoiskeys.h>
 #include <seal/relinkeys.h>
 #include <seal/seal.h>
 #include <seal/valcheck.h>
 #include <utility>
+#include <vector>
 #include <zmq.h>
 #include "channel.h"
 #include "ckks_evaluator.h"
@@ -96,9 +98,10 @@ public:
                  << " milliseconds" << endl;
         } break;
 
-        case func::MM:
-            // matrix();
-            break;
+        case func::MM: {
+            vector<Ciphertext> Y;
+            io->recv_vec_Ciphertexts(context, Y);
+        } break;
         case func::SOFTMAX: {
             vector<double> input = { -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4 };
             Plaintext plain_input;

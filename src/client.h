@@ -87,6 +87,11 @@ public:
         printf("Client: Received ciphertext %.10lf\n", res[0]);
     }
 
+    void MM()
+    {
+        // io->send_vec_Ciphertexts(std::vector<seal::Ciphertext> & ciphertexts);
+    }
+
     void reEncrypt()
     {
         while (true) {

@@ -53,6 +53,43 @@ public:
         return request.size();
     }
 
+    void send_vec_Ciphertexts(std::vector<seal::Ciphertext> &ciphertexts)
+    {
+        uint64_t size = ciphertexts.size();
+        zmq::message_t size_msg(&size, sizeof(size));
+        socket.send(size_msg, zmq::send_flags::sndmore);
+
+        // 逐个发送 ciphertexts
+        for (const auto &ct : ciphertexts) {
+            std::stringstream ss;
+            ct.save(ss);
+            std::string str = ss.str();
+            zmq::message_t message(str.begin(), str.end());
+            socket.send(message, zmq::send_flags::sndmore);
+        }
+    }
+
+    void recv_vec_Ciphertexts(seal::SEALContext &context, std::vector<seal::Ciphertext> &ciphertexts)
+    {
+        // 接收 ciphertexts 的数量
+        zmq::message_t size_msg;
+        auto _ = socket.recv(size_msg);
+        uint64_t size = *size_msg.data<uint64_t>();
+
+        // 重建 ciphertexts
+        ciphertexts.clear();
+        ciphertexts.reserve(size);
+        for (uint64_t i = 0; i < size; ++i) {
+            zmq::message_t ct_msg;
+            _ = socket.recv(ct_msg);
+            std::string str(ct_msg.data<char>(), ct_msg.size());
+            std::stringstream ss(str);
+            seal::Ciphertext ct(context);
+            ct.load(context, ss);
+            ciphertexts.push_back(std::move(ct));
+        }
+    }
+
     zmq::context_t zmqcontext;
     zmq::socket_t socket;
     std::string address;

@@ -86,8 +86,8 @@ int main()
     //      << " times softmax() takes: " << duration_cast<milliseconds>(end - start).count() / 1.0 << " milliseconds"
     //      << endl;
 
-    ckks_evaluator.print_decrypted_ct(cipher_output, 8);
-    cout << "communication cost: " << ckks_evaluator.comm << " bytes" << endl;
+    // ckks_evaluator.print_decrypted_ct(cipher_output, 8);
+    // cout << "communication cost: " << ckks_evaluator.comm << " bytes" << endl;
     // cout << "communication round: " << ckks_evaluator.round << endl;
     // MM_test();
 }

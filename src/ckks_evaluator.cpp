@@ -11,8 +11,6 @@ void CKKSEvaluator::re_encrypt(Ciphertext &ct)
     }
 
     round++;
-    // cout << "Communication cost:  " <<
-    // ct.save(data.data(),data.size(),compr_mode_type::zstd) << " bytes" << endl;
     Plaintext temp;
     vector<double> v;
 
@@ -28,14 +26,9 @@ void CKKSEvaluator::re_encrypt(Ciphertext &ct)
 
     encoder->encode(init_vec_with_value(N / 2, 0), ct.parms_id(), ct.scale(), rand);
     evaluator->add_plain_inplace(ct, rand);
-    // decryptor->decrypt(ct, temp);
-    // encoder->decode(temp, v);
-    // encoder->encode(v, scale, temp);
-    // encryptor->encrypt(temp, ct);
+
     auto end = high_resolution_clock::now();
     cout << duration_cast<milliseconds>(end - start).count() / 2 << " milliseconds" << endl;
-    // cout << "depth = " <<
-    // context->get_context_data(ct.parms_id())->chain_index() << "\n";
 }
 
 void CKKSEvaluator::print_decrypted_ct(Ciphertext &ct, int nums)
@@ -189,7 +182,7 @@ Ciphertext CKKSEvaluator::sgn_eval2(Ciphertext x, int d_g, int d_f)
 {
     Ciphertext dest = x;
     for (int i = 0; i < d_g; i++) {
-        if (context->get_context_data(dest.parms_id())->chain_index() < 5) {
+        if (context->get_context_data(dest.parms_id())->chain_index() < 4) {
             re_encrypt(dest);
         }
         if (i == d_g - 1) {
@@ -199,7 +192,7 @@ Ciphertext CKKSEvaluator::sgn_eval2(Ciphertext x, int d_g, int d_f)
         }
     }
     for (int i = 0; i < d_f; i++) {
-        if (context->get_context_data(dest.parms_id())->chain_index() < 5) {
+        if (context->get_context_data(dest.parms_id())->chain_index() < 4) {
             re_encrypt(dest);
         }
         if (i == d_f - 1) {
@@ -306,6 +299,7 @@ void CKKSEvaluator::eval_odd_deg9_poly(vector<double> &a, Ciphertext &x, Ciphert
     // Build T1
     Ciphertext T1;
     double a5_scale = D / x2.scale() * p / x3.scale() * q;
+
     encoder->encode(a[5], x2.parms_id(), a5_scale, a5); // L-1
     evaluator->multiply_plain(x2, a5, T1);
     evaluator->rescale_to_next_inplace(T1); // L-2
