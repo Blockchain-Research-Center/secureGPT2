@@ -10,11 +10,10 @@ void GeLUEvaluator::gelu(Ciphertext &x, Ciphertext &res)
     Plaintext p0, p1, p2, delta;
     vector<double> dest;
 
-    ckks->encoder->encode(ckks->init_vec_with_value(ckks->slot_count, -4.0), x.parms_id(), x.scale(), p0);
-    ckks->encoder->encode(ckks->init_vec_with_value(ckks->slot_count, -1.95), x.parms_id(), x.scale(), p1);
-    ckks->encoder->encode(ckks->init_vec_with_value(ckks->slot_count, 3.0), x.parms_id(), x.scale(), p2);
-    ckks->encoder->encode(
-        ckks->init_vec_with_value(ckks->slot_count, 1.0 / 16), x.parms_id(), x.scale(), delta);
+    ckks->encoder->encode(-4.0, x.parms_id(), x.scale(), p0);
+    ckks->encoder->encode(-1.95, x.parms_id(), x.scale(), p1);
+    ckks->encoder->encode(3.0, x.parms_id(), x.scale(), p2);
+    ckks->encoder->encode(0.1, x.parms_id(), x.scale(), delta);
 
     ckks->evaluator->sub_plain(x, p0, b0);
     ckks->evaluator->multiply_plain_inplace(b0, delta);
@@ -33,8 +32,7 @@ void GeLUEvaluator::gelu(Ciphertext &x, Ciphertext &res)
 
     
     Plaintext zero_point_five;
-    ckks->encoder->encode(
-        ckks->init_vec_with_value(ckks->slot_count, 0.5), b2.parms_id(), b2.scale(), zero_point_five);
+    ckks->encoder->encode(0.5, b2.parms_id(), b2.scale(), zero_point_five);
     Ciphertext a0, a1, a2, a3;
 
     ckks->evaluator->sub(b0, b1, a1);                    // a1 = b0 - b1

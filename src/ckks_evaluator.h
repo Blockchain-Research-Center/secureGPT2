@@ -104,12 +104,12 @@ public:
     }
     void re_encrypt(Ciphertext &ct);
     void print_decrypted_ct(Ciphertext &ct, int nums);
-    vector<double> init_vec_with_value(int N, double init_value);
     vector<double> init_mask(int N, int m);
     uint64_t get_modulus(Ciphertext &x, int k);
-    Ciphertext invert_sqrt(Ciphertext x, int d_newt = 20, int d_gold = 1);
-    Ciphertext sgn_eval(Ciphertext x, int d_g, int d_f, double fractor);
+    Ciphertext invert_sqrt(Ciphertext x, int d_newt = 8);
+    Ciphertext inverse(Ciphertext x, int iter = 4);
     void eval_odd_deg9_poly(vector<double>& a, Ciphertext& x, Ciphertext& dest);
     Ciphertext sgn_eval2(Ciphertext x, int d_g, int d_f);
+    Ciphertext sgn(Ciphertext x, int d_g, int d_f);
     Ciphertext exp(Ciphertext x);
 };

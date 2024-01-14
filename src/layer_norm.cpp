@@ -17,7 +17,7 @@ void LNEvaluator::layer_norm(Ciphertext &x, Ciphertext &res, int len) {
         ckks->evaluator->add_inplace(res, tmp);
         tmp = res;
     }
-    res = ckks->invert_sqrt(res, 15, 5);
+    res = ckks->invert_sqrt(res);
     ckks->evaluator->mod_switch_to_inplace(x, res.parms_id());
     ckks->evaluator->multiply(res, x, res);
     ckks->evaluator->relinearize_inplace(res, *ckks->relin_keys);

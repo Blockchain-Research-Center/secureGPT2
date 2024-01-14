@@ -11,6 +11,7 @@
 #include "layer_norm.h"
 #include "matrix_mul.h"
 #include "softmax.h"
+#include "argmax.h"
 
 using namespace std;
 using namespace seal;
@@ -22,12 +23,22 @@ void MM_test();
 int main()
 {
     EncryptionParameters parms(scheme_type::ckks);
-    long logN = 14;
+    long logN = 15;
     size_t poly_modulus_degree = 1 << logN;
     double scale = pow(2.0, 40);
+    int depth = 17;
+
+    // cout << "Chose N=" << poly_modulus_degree << " so max bit count is " << CoeffModulus::MaxBitCount(poly_modulus_degree) << endl;
+    // cout << "Will attempt to use " << 60 + log2(scale) * depth + 60 << " bits (depth = " << depth << ")" << endl;
+    vector<int> moduli_bits(depth + 2, log2(scale));
+    moduli_bits[0] = 60;
+    moduli_bits[moduli_bits.size() - 1] = 60;
+
     parms.set_poly_modulus_degree(poly_modulus_degree);
-    parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 58, 40, 40, 40, 40, 40, 40, 40, 40, 58 }));
-    SEALContext context(parms);
+
+    auto moduli = CoeffModulus::Create(poly_modulus_degree, moduli_bits);
+    parms.set_coeff_modulus(moduli);  // parms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, moduli_bits));
+    SEALContext context(parms, true, sec_level_type::none);
 
     KeyGenerator keygen(context);
     SecretKey secret_key = keygen.secret_key();
@@ -53,8 +64,10 @@ int main()
     GeLUEvaluator gelu_evaluator(ckks_evaluator);
     LNEvaluator ln_evaluator(ckks_evaluator);
     SoftmaxEvaluator softmax_evaluator(ckks_evaluator);
+    ArgmaxEvaluator argmax_evaluator(ckks_evaluator);
     // double bound = 1.0 / (1 << 16);
-    vector<double> input = {-0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4};
+    // vector<double> input = {-0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4};
+    vector<double> input = {0.4, 0.3, 0.2, 0.1, 0.7, 0.8, 0.2, 0.4};
     Plaintext plain_input;
     Ciphertext cipher_input;
     Ciphertext cipher_output;
@@ -62,13 +75,13 @@ int main()
     ckks_evaluator.encoder->encode(input, scale, plain_input);
     ckks_evaluator.encryptor->encrypt(plain_input, cipher_input);
 
-    auto start = high_resolution_clock::now();
-    gelu_evaluator.gelu(cipher_input, cipher_output);
-    auto end = high_resolution_clock::now();
-    cout << poly_modulus_degree/2 << " times gelu() takes: " << duration_cast<milliseconds>(end - start).count()
-    / 1.0 << " milliseconds" << endl;
+    // auto start = high_resolution_clock::now();
+    // gelu_evaluator.gelu(cipher_input, cipher_output);
+    // auto end = high_resolution_clock::now();
+    // cout << poly_modulus_degree/2 << " times gelu() takes: " << duration_cast<milliseconds>(end - start).count()
+    // / 2.0 << " milliseconds" << endl;
 
-    //  auto start = high_resolution_clock::now(); int size = input.size();
+    // auto start = high_resolution_clock::now(); int size = input.size();
     // ln_evaluator.layer_norm(cipher_input, cipher_output, size);
     // auto end = high_resolution_clock::now();
     // cout << poly_modulus_degree/4 << " times LN() takes: " << duration_cast<milliseconds>(end - start).count() / 1.0
@@ -77,15 +90,27 @@ int main()
 
     // auto start = high_resolution_clock::now();
     // int size = input.size();
-    // softmax_evaluator.softmax(cipher_input, cipher_output, size);
+    // //cipher_output = ckks_evaluator.inverse(cipher_input);
+    // softmax_evaluator.softmax2(cipher_input, cipher_output, size);
     // auto end = high_resolution_clock::now();
     // cout << poly_modulus_degree / 4
     //      << " times softmax() takes: " << duration_cast<milliseconds>(end - start).count() / 1.0 << " milliseconds"
     //      << endl;
-
+    
+    auto start = high_resolution_clock::now(); int size = input.size();
+    argmax_evaluator.argmax(cipher_input, cipher_output, size);
+    auto end = high_resolution_clock::now();
+    cout << poly_modulus_degree/4 << " times Argmax() takes: " << duration_cast<seconds>(end - start).count() / 2.0
+    << " seconds" << endl; 
+    cout << "Input: ";
+    for (int i = 0; i < input.size(); i++) {
+        printf("%.1f ", input[i]);;
+    }
+    cout << "\n";
+    cout << "Output: ";
     ckks_evaluator.print_decrypted_ct(cipher_output, 8);
-    cout << "communication cost: " << ckks_evaluator.comm << " bytes" << endl;
-    cout << "communication round: " << ckks_evaluator.round << endl;
+    // cout << "communication cost: " << ckks_evaluator.comm << " bytes" << endl;
+    // cout << "communication round: " << ckks_evaluator.round << endl;
     //MM_test();
 }
 
