@@ -16,6 +16,7 @@ add_executable(
     ${CMAKE_SOURCE_DIR}/src/softmax.cpp
     ${CMAKE_SOURCE_DIR}/src/matrix_mul.cpp
     ${CMAKE_SOURCE_DIR}/src/argmax.cpp
+    ${CMAKE_SOURCE_DIR}/src/thread_pool_mgr.cpp
 )
 
 

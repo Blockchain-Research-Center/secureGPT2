@@ -1,44 +1,50 @@
 [
 {
-  "directory": "/home/irin/code/secureGPT2",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SEAL-4.1 -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/main.cpp.o -c /home/irin/code/secureGPT2/src/main.cpp",
-  "file": "/home/irin/code/secureGPT2/src/main.cpp",
+  "directory": "/home/andy/MPC/secureGPT2",
+  "command": "/usr/bin/c++  -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include/SEAL-4.1 -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/main.cpp.o -c /home/andy/MPC/secureGPT2/src/main.cpp",
+  "file": "/home/andy/MPC/secureGPT2/src/main.cpp",
   "output": "CMakeFiles/main.dir/src/main.cpp.o"
 },
 {
-  "directory": "/home/irin/code/secureGPT2",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SEAL-4.1 -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/gelu.cpp.o -c /home/irin/code/secureGPT2/src/gelu.cpp",
-  "file": "/home/irin/code/secureGPT2/src/gelu.cpp",
+  "directory": "/home/andy/MPC/secureGPT2",
+  "command": "/usr/bin/c++  -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include/SEAL-4.1 -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/gelu.cpp.o -c /home/andy/MPC/secureGPT2/src/gelu.cpp",
+  "file": "/home/andy/MPC/secureGPT2/src/gelu.cpp",
   "output": "CMakeFiles/main.dir/src/gelu.cpp.o"
 },
 {
-  "directory": "/home/irin/code/secureGPT2",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SEAL-4.1 -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/layer_norm.cpp.o -c /home/irin/code/secureGPT2/src/layer_norm.cpp",
-  "file": "/home/irin/code/secureGPT2/src/layer_norm.cpp",
+  "directory": "/home/andy/MPC/secureGPT2",
+  "command": "/usr/bin/c++  -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include/SEAL-4.1 -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/layer_norm.cpp.o -c /home/andy/MPC/secureGPT2/src/layer_norm.cpp",
+  "file": "/home/andy/MPC/secureGPT2/src/layer_norm.cpp",
   "output": "CMakeFiles/main.dir/src/layer_norm.cpp.o"
 },
 {
-  "directory": "/home/irin/code/secureGPT2",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SEAL-4.1 -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/ckks_evaluator.cpp.o -c /home/irin/code/secureGPT2/src/ckks_evaluator.cpp",
-  "file": "/home/irin/code/secureGPT2/src/ckks_evaluator.cpp",
+  "directory": "/home/andy/MPC/secureGPT2",
+  "command": "/usr/bin/c++  -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include/SEAL-4.1 -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/ckks_evaluator.cpp.o -c /home/andy/MPC/secureGPT2/src/ckks_evaluator.cpp",
+  "file": "/home/andy/MPC/secureGPT2/src/ckks_evaluator.cpp",
   "output": "CMakeFiles/main.dir/src/ckks_evaluator.cpp.o"
 },
 {
-  "directory": "/home/irin/code/secureGPT2",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SEAL-4.1 -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/softmax.cpp.o -c /home/irin/code/secureGPT2/src/softmax.cpp",
-  "file": "/home/irin/code/secureGPT2/src/softmax.cpp",
+  "directory": "/home/andy/MPC/secureGPT2",
+  "command": "/usr/bin/c++  -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include/SEAL-4.1 -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/softmax.cpp.o -c /home/andy/MPC/secureGPT2/src/softmax.cpp",
+  "file": "/home/andy/MPC/secureGPT2/src/softmax.cpp",
   "output": "CMakeFiles/main.dir/src/softmax.cpp.o"
 },
 {
-  "directory": "/home/irin/code/secureGPT2",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SEAL-4.1 -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/matrix_mul.cpp.o -c /home/irin/code/secureGPT2/src/matrix_mul.cpp",
-  "file": "/home/irin/code/secureGPT2/src/matrix_mul.cpp",
+  "directory": "/home/andy/MPC/secureGPT2",
+  "command": "/usr/bin/c++  -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include/SEAL-4.1 -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/matrix_mul.cpp.o -c /home/andy/MPC/secureGPT2/src/matrix_mul.cpp",
+  "file": "/home/andy/MPC/secureGPT2/src/matrix_mul.cpp",
   "output": "CMakeFiles/main.dir/src/matrix_mul.cpp.o"
 },
 {
-  "directory": "/home/irin/code/secureGPT2",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SEAL-4.1 -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/argmax.cpp.o -c /home/irin/code/secureGPT2/src/argmax.cpp",
-  "file": "/home/irin/code/secureGPT2/src/argmax.cpp",
+  "directory": "/home/andy/MPC/secureGPT2",
+  "command": "/usr/bin/c++  -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include/SEAL-4.1 -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/argmax.cpp.o -c /home/andy/MPC/secureGPT2/src/argmax.cpp",
+  "file": "/home/andy/MPC/secureGPT2/src/argmax.cpp",
   "output": "CMakeFiles/main.dir/src/argmax.cpp.o"
+},
+{
+  "directory": "/home/andy/MPC/secureGPT2",
+  "command": "/usr/bin/c++  -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include/SEAL-4.1 -isystem /home/andy/MPC/vcpkg/installed/x64-linux/include -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/main.dir/src/thread_pool_mgr.cpp.o -c /home/andy/MPC/secureGPT2/src/thread_pool_mgr.cpp",
+  "file": "/home/andy/MPC/secureGPT2/src/thread_pool_mgr.cpp",
+  "output": "CMakeFiles/main.dir/src/thread_pool_mgr.cpp.o"
 }
 ]
