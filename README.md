@@ -1,5 +1,5 @@
 # SecTransformer
-SecTransformer is an efficient secure transformer framework for chatGPT inference
+SecTransformer is an efficient secure transformer framework for transformer inference
 
 
 # Compiling SEAL
